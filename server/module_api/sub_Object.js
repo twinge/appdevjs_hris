@@ -24,7 +24,7 @@ var HRiS= null;       // the shared HRiS code.
 
 var sqlCommands = {
         newTable : 'CREATE TABLE '+AD.Defaults.dbName+'.`[object_table]` ( `[object_pkey]` int(11) unsigned NOT NULL AUTO_INCREMENT, PRIMARY KEY (`[object_pkey]`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;',
-        dropTable: 'DROP TABLE IF EXISTS '+AD.Defaults.dbName+'.`[object_table]`'
+        renameTable: 'RENAME TABLE '+AD.Defaults.dbName+'.`[object_table]` TO '+AD.Defaults.dbName+'.`[object_table]_deleted`'
 }
 
 //-----------------------------------------------------------------------------
@@ -116,21 +116,13 @@ hrisObject.setup = function() {
      * @param {obj} data the primary key id of the newly created Object( { id:1 } )
      */
     // data is { id:#, guid:'string' }
-    var deleteObject = function(event, data) {
+    var deleteObject = function(event, object) {
 
 console.log('... deleteObject:');
 
-        //// lookup our Object from the cache
-        //// since it is already destroyed by now:
-        if ('undefined' != typeof cachedObjects[data.id]) {
 
-            var object = cachedObjects[data.id];
-            delete cachedObjects[data.id];  // remove this cache entry
-
-
-
-            //// 1: Drop Table referenced by this object
-            var sql = AD.Util.String.render(sqlCommands.dropTable, object);
+            //// 1: Rename Table referenced by this object
+            var sql = AD.Util.String.render(sqlCommands.renameTable, object);
 
 console.log('sql:'+sql);
 
@@ -142,20 +134,6 @@ console.log('sql:'+sql);
 //                   AD.Comm.Notification.publish('hris.'+attributeColumn+'.created', data);
 // console.log('hey! check it out!');
              });
-
-
-
-
-
-        //// 2: Remove any relationships referenced by/to this object
-
-
-
-        } else {
-
-            /// Odd ... where did this reference come from?
-            error('sub_Object.js: deleteObject(): object id['+data.id+'] not found!');
-        }
 
     }
     hrisHub.subscribe('hris.Object.destroyed', deleteObject);

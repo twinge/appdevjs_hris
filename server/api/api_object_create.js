@@ -115,6 +115,9 @@ var create = function (req, res, next) {
     params[b] = req.body[b];
   }
 
+  params.object_pkey = params.object_pkey || params.object_key + '_id'
+  params.object_table = params.object_table || 'hris_' + params.object_key
+
   $.when(Object.existing(params)).then(function(existing) {
     if (!existing) {
       Object.create(params, function(id) {
